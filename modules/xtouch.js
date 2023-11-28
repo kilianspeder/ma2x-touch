@@ -56,6 +56,24 @@ class XTouchMidiController extends MidiController {
         // {"bytes":[240,64,65,66,89,2,2,2,2,1,1,1,1,247],"_type":"sysex"}
     }
 
+    set_encoder(name, value) {
+        let out_value = this.float_to_encoder(value);
+
+        let out_controller = this.encoder_name_to_controller(name);
+
+        // console.log("Set encoder " + out_controller + " to value " + out_value);
+        this.output_device.send('cc', { controller: out_controller, value: out_value, channel: 0 });
+    }
+
+    on_cc(midi) {
+        let value = midi.value;
+        if (value > 32)
+            value = 64 - value;
+
+        let encoder_name = this.controller_to_cc_name(midi.controller);
+        this.emit('encoder', { name: encoder_name, value: value });
+    }
+
     fader_name_to_channel(name) {
         let channel;
         if (name.startsWith('fader')) {
@@ -89,7 +107,7 @@ class XTouchMidiController extends MidiController {
         console.error("Could not translate encoder name " + name);
     }
 
-    controller_to_encoder_name(controller) {
+    controller_to_cc_name(controller) {
         return "encoder" + (controller - 15);
     }
 
@@ -122,7 +140,7 @@ class XTouchMidiController extends MidiController {
 xt = new XTouchMidiController();
 // xt.reset_device();
 // YOU NEED TO WAIT AFTER THAT
-xt.midi_clear_output()
+xt.clear_output()
 xt.set_button("button1", true);
 xt.set_button("buttonA", true);
 xt.set_button("buttonPrev", true);

@@ -30,7 +30,7 @@ class MidiController extends EventEmitter {
         this.output_device.send('reset');
     }
 
-    midi_clear_output(output) {
+    clear_output(output) {
         for (let i = 0; i < 128; i++) {
             this.output_device.send('noteon', { note: i, velocity: 0, channel: 0 });
             this.output_device.send('cc', { controller: i, value: 0, channel: 0 });
@@ -49,24 +49,10 @@ class MidiController extends EventEmitter {
         this.output_device.send('pitch', { value: out_value, channel: out_channel });
     }
 
-    set_encoder(name, value) {
-        let out_value = this.float_to_encoder(value);
-
-        let out_controller = this.encoder_name_to_controller(name);
-
-        // console.log("Set encoder " + out_controller + " to value " + out_value);
-        this.output_device.send('cc', { controller: out_controller, value: out_value, channel: 0 });
-    }
-
     set_button(name, value) {
         let out_note = this.button_name_to_note(name)
 
-        let out_value;
-        if (value) {
-            out_value = 127;
-        } else {
-            out_value = 0;
-        }
+        let out_value = this.button_value_to_velocity(value);
 
         this.output_device.send('noteon', { note: out_note, velocity: out_value, channel: 0 });
     }
@@ -79,11 +65,8 @@ class MidiController extends EventEmitter {
 
     on_cc(midi) {
         let value = midi.value;
-        if (value > 32)
-            value = 64 - value;
-
-        let encoder_name = this.controller_to_encoder_name(midi.controller);
-        this.emit('encoder', { name: encoder_name, value: value });
+        let encoder_name = this.controller_to_cc_name(midi.controller);
+        this.emit('cc', { name: encoder_name, value: value });
     }
 
     on_pitch(midi) {
@@ -96,10 +79,6 @@ class MidiController extends EventEmitter {
         return parseInt(name);
     }
 
-    encoder_name_to_controller(name) {
-        return parseInt(name)
-    }
-
     button_name_to_note(name) {
         return parseInt(name);
     }
@@ -108,7 +87,7 @@ class MidiController extends EventEmitter {
         return String(channel);
     }
 
-    controller_to_encoder_name(controller) {
+    controller_to_cc_name(controller) {
         return String(controller);
     }
 
@@ -126,6 +105,12 @@ class MidiController extends EventEmitter {
 
     float_to_encoder(value) {
         return value * 127;
+    }
+
+    button_value_to_velocity(value) {
+        if (value)
+            return 127;
+        return 0;
     }
 }
 
