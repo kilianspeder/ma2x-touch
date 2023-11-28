@@ -111,6 +111,10 @@ class XTouchMidiController extends MidiController {
         return "encoder" + (controller - 15);
     }
 
+    encoder_name_to_controller(name) {
+        return parseInt(name)
+    }
+
     button_name_to_note(name) {
         let value = button_names.get(name);
         if (name.startsWith("buttonTouch") || name.startsWith("buttonEncoder"))
