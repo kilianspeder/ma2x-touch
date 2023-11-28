@@ -49,14 +49,15 @@ class MidiController extends EventEmitter {
         this.output_device.send('pitch', { value: out_value, channel: out_channel });
     }
 
-    set_button(name, value) {
+    set_button(name, value, channel = 0) {
         let out_note = this.button_name_to_note(name)
 
         let out_value = this.button_value_to_velocity(value);
 
-        this.output_device.send('noteon', { note: out_note, velocity: out_value, channel: 0 });
+        this.output_device.send('noteon', { note: out_note, velocity: out_value, channel: channel });
     }
 
+    // Events from input midi device
     on_note(midi) {
         let out_value = midi.velocity ? true : false;
         let button_name = this.note_to_button_name(midi.note);
@@ -75,6 +76,7 @@ class MidiController extends EventEmitter {
         this.emit('fader', { name: fader_name, value: out_value });
     }
 
+    // name translation
     fader_name_to_channel(name) {
         return parseInt(name);
     }
@@ -95,6 +97,7 @@ class MidiController extends EventEmitter {
         return String(note);
     }
 
+    // value translation
     float_to_fader(value) {
         return parseInt(value * 16383);
     }

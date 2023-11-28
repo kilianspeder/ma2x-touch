@@ -11,6 +11,8 @@ class LaunchpadMidiController extends MidiController {
 
 }
 
+module.exports = LaunchpadMidiController
+
 // TESTING
 
 lp = new LaunchpadMidiController();

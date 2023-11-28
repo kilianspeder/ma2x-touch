@@ -2,30 +2,36 @@ MidiController = require("./midi.js");
 BiMap = require("bidirectional-map");
 
 var button_names = new BiMap({
-    "buttonMain": 50,
     "buttonEncoderDec15": 46,
     "buttonEncoderInc15": 47,
     "buttonEncoderDec16": 48,
     "buttonEncoderInc16": 49,
+    "buttonMain": 50,
     "buttonA": 84,
     "buttonB": 85,
+    "buttonLoop": 86,
     "buttonPrev": 91,
     "buttonNext": 92,
-    "buttonLoop": 86,
-    "buttonRec": 95,
     "buttonStop": 93,
     "buttonPlay": 94,
+    "buttonRec": 95,
     "buttonTouchMain": 112,
 })
 
 for (let i = 0; i < 8; i++) {
+    // Bottom row 
     button_names.set("button" + (i + 1), i);
+    // Top row
     button_names.set("button" + (i + 1) + "1", i + 8);
+    // Middle row
     button_names.set("button" + (i + 1) + "2", i + 16);
+    // Lower upper row
     button_names.set("button" + (i + 1) + "3", i + 24);
+    // Touch fader buttons
     button_names.set("buttonTouch" + (i + 1), i + 104);
 }
 for (let i = 0; i < 14; i++) {
+    // Encoder buttons (work up to encoder 14)
     button_names.set("buttonEncoder" + (i + 1), i + 32)
 }
 
@@ -61,7 +67,6 @@ class XTouchMidiController extends MidiController {
 
         let out_controller = this.encoder_name_to_controller(name);
 
-        // console.log("Set encoder " + out_controller + " to value " + out_value);
         this.output_device.send('cc', { controller: out_controller, value: out_value, channel: 0 });
     }
 
@@ -111,10 +116,6 @@ class XTouchMidiController extends MidiController {
         return "encoder" + (controller - 15);
     }
 
-    encoder_name_to_controller(name) {
-        return parseInt(name)
-    }
-
     button_name_to_note(name) {
         let value = button_names.get(name);
         if (name.startsWith("buttonTouch") || name.startsWith("buttonEncoder"))
@@ -134,9 +135,13 @@ class XTouchMidiController extends MidiController {
     }
 
     float_to_encoder(value) {
-        return parseInt(value * 10) + 1 + 16 * this.encoder_mode_offset
+        if (value == -1)
+            return 0;
+        return 1 + parseInt(value * 10) + 16 * this.encoder_mode_offset
     }
 }
+
+module.exports = XTouchMidiController
 
 
 // TESTING
